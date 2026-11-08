@@ -1,0 +1,80 @@
+// نظام إدارة وتحليل درجات الطلاب - تاسك الجافاسكريبت
+class Student {
+    constructor(studentId, fullName, studentGrades, attendanceRate) {
+        this.studentId = studentId;
+        this.fullName = fullName;
+        this.studentGrades = studentGrades; // مصفوفة درجات 3 مواد
+        this.attendanceRate = attendanceRate; // نسبة الحضور
+    }
+
+    // دالة حساب المتوسط للدرجات
+    calculateAverage() {
+        const totalGradesSum = this.studentGrades.reduce((sum, currentGrade) => sum + currentGrade, 0);
+        return totalGradesSum / this.studentGrades.length;
+    }
+
+    // دالة تحديد التقدير الحرفي بناءً على المعدل
+    calculateGradeLetter() {
+        const avg = this.calculateAverage();
+        if (avg >= 85) return 'A';
+        if (avg >= 75) return 'B';
+        if (avg >= 65) return 'C';
+        if (avg >= 50) return 'D';
+        if (avg >= 40) return 'E';
+        return 'F';
+    }
+
+    // دالة فحص حالة النجاح أو الرسوب بالشروط المطلوبة
+    checkFinalStatus() {
+        const avg = this.calculateAverage();
+        // الشرط: المتوسط 50 أو أكثر والحضور 75% أو أكثر
+        if (avg >= 50 && this.attendanceRate >= 75) {
+            return "ناجح";
+        } else {
+            return "يحتاج مراجعة";
+        }
+    }
+}
+
+// مصفوفة قائمة الطلاب في الجامعة
+const studentsList = [
+    new Student(101, "أحمد محمد", [88, 92, 85], 80),
+    new Student(102, "سارة محمود", [42, 45, 48], 78), // طالب متعثر (المتوسط بين 40 و 49)
+    new Student(103, "عمر إبراهيم", [65, 70, 68], 85),
+    new Student(104, "منى حسين", [44, 40, 46], 90)  // طالب متعثر (المتوسط بين 40 و 49)
+];
+
+console.log("--- تقرير درجات وتقديرات الطلاب ---");
+studentsList.forEach(student => {
+    const finalAvg = student.calculateAverage().toFixed(2);
+    console.log(`اسم الطالب: ${student.fullName} | المتوسط: ${finalAvg} | التقدير: ${student.calculateGradeLetter()} | الحالة: ${student.checkFinalStatus()}`);
+});
+
+// استخراج الطلاب المتعثرين (الذين متوسطهم بين 40 و 49) باستخدام filter
+const strugglingStudents = studentsList.filter(student => {
+    const studentAvg = student.calculateAverage();
+    return studentAvg >= 40 && studentAvg < 50;
+});
+
+console.log("\n--- الطلاب المتعثرين قبل الرأفة ---");
+strugglingStudents.forEach(student => {
+    console.log(`${student.fullName} - المتوسط: ${student.calculateAverage()}`);
+});
+
+// تطبيق درجات الرأفة (إضافة 5 درجات) باستخدام map
+const boostedAverages = strugglingStudents.map(student => {
+    let updatedAverage = student.calculateAverage() + 5;
+    return updatedAverage > 100 ? 100 : updatedAverage; // للتأكد ألا يتجاوز المتوسط 100
+});
+
+console.log("\n--- متوسطات المتعثرين بعد إضافة 5 درجات رأفة ---");
+console.log(boostedAverages);
+
+// حساب المتوسط العام للمتعثرين بعد التعديل باستخدام reduce مع حماية القسمة على صفر
+let overallBoostedAverage = 0;
+if (boostedAverages.length > 0) {
+    const sumOfBoosted = boostedAverages.reduce((acc, curr) => acc + curr, 0);
+    overallBoostedAverage = sumOfBoosted / boostedAverages.length;
+}
+
+console.log(`\nالمتوسط العام للطلاب المتعثرين بعد التعديل: ${overallBoostedAverage.toFixed(2)}`);
